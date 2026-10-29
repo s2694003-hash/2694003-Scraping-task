@@ -5,6 +5,8 @@ from collections import deque
 from urllib.parse import urljoin, urldefrag, urlparse
 import time
 
+import csv
+
 # アクセスしたいWebサイトのURL
 url = "https://www.musashino-u.ac.jp/"
 domain = "www.musashino-u.ac.jp"                      # 同一ドメインの判定に使う
@@ -48,17 +50,24 @@ while queue:
             seen.add(link)
             queue.append(link)
 
-# サイトマップを表示する
-for key, value in sitemap.items():
-        print(f"{key}: {value}")
+# 4. 辞書の内容をCSVファイルに書き込む
+with open("Dsprog1_assignment4_2694003.csv", "w", newline="", encoding="utf-8-sig") as f:
+    writer = csv.writer(f)
+    writer.writerow(["URL", "Title"])
+    for page_url, title in sitemap.items():
+        writer.writerow([page_url, title])
+
+# # サイトマップを表示する
+# for key, value in sitemap.items():
+#         print(f"{key}: {value}")
 
 # with open("musashino-u.html", "w") as f:
 #     f.write(res.text)
 
+# # 任意の属性で検索
+# tag_href_list = html_soup.find_all(attrs={"href": True})
 
+# for tag in tag_href_list:
+#     print(tag)
 
-# 任意の属性で検索
-tag_href_list = html_soup.find_all(attrs={"href": True})
-
-for tag in tag_href_list:
-    print(tag)
+print(f"完了:{len(sitemap)}ページをCSVに保存しました")
