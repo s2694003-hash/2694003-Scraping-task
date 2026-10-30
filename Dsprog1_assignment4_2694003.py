@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from collections import deque
-from urllib.parse import urljoin, urldefrag, urlparse
+from urllib.parse import unquote, urljoin, urldefrag, urlparse
 import time
 
 import csv
@@ -10,7 +10,20 @@ import csv
 # アクセスしたいWebサイトのURL
 url = "https://www.musashino-u.ac.jp/"
 domain = "www.musashino-u.ac.jp"                      # 同一ドメインの判定に使う
-skip_ext = (".pdf", ".jpg", ".png", ".gif", ".zip")   # 非HTMLの拡張子
+skip_ext = (".pdf", ".jpg", ".jpeg", ".png", ".gif", ".zip", ".doc", ".docx",
+            ".xls", ".xlsx", ".ppt", ".pptx", ".mp4", ".mp3", ".csv")  # 非HTMLの拡張子
+
+# URLの表記ゆれ（http/https・/index.html・末尾スラッシュ）を1つにまとめる
+def normalize(link):
+    parsed = urlparse(link)
+    path = parsed.path
+    path = unquote(parsed.path)               # %E9%AB%98... → 高...（日本語表記にそろえる）
+    if path.endswith("/index.html"):          # /guide/index.html → /guide/
+        path = path[:-len("/index.html")]
+    if "." not in path.rsplit("/", 1)[-1] and not path.endswith("/"):
+        path += "/"                           # /guide → /guide/（.html等のファイルはそのまま）
+    query = f"?{parsed.query}" if parsed.query else ""
+    return f"https://{domain}{path}{query}"
 
 # サイトマップを格納する辞書（key: URL, value: <title>で挟まれた文字列）
 sitemap = {}
@@ -45,8 +58,14 @@ while queue:
         link = urldefrag(urljoin(page_url, a['href']))[0]  # 絶対URLに変換→#以下を除去
         parsed = urlparse(link)
 
-        # 同一ドメインのHTMLページだけを訪問予定に入れる
-        if parsed.netloc == domain and not link.lower().endswith(skip_ext) and link not in seen:
+        # 同一ドメインのページだけを訪問予定に入れる
+        if parsed.netloc != domain:
+            continue
+
+        link = normalize(link)  # http/https・index.html・スラッシュの表記ゆれを統一
+
+        # 非HTMLファイルを除外し、未訪問のURLだけをキューに追加する
+        if not link.lower().endswith(skip_ext) and link not in seen:
             seen.add(link)
             queue.append(link)
 
