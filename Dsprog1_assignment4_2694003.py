@@ -10,7 +10,8 @@ import csv
 # アクセスしたいWebサイトのURL
 url = "https://www.musashino-u.ac.jp/"
 domain = "www.musashino-u.ac.jp"                      # 同一ドメインの判定に使う
-skip_ext = (".pdf", ".jpg", ".png", ".gif", ".zip")   # 非HTMLの拡張子
+skip_ext = (".pdf", ".jpg", ".jpeg", ".png", ".gif", ".zip", ".doc", ".docx",
+            ".xls", ".xlsx", ".ppt", ".pptx", ".mp4", ".mp3", ".csv")  # 非HTMLの拡張子
 
 # サイトマップを格納する辞書（key: URL, value: <title>で挟まれた文字列）
 sitemap = {}
