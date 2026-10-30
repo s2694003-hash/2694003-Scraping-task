@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from collections import deque
-from urllib.parse import urljoin, urldefrag, urlparse
+from urllib.parse import unquote, urljoin, urldefrag, urlparse
 import time
 
 import csv
@@ -17,6 +17,7 @@ skip_ext = (".pdf", ".jpg", ".jpeg", ".png", ".gif", ".zip", ".doc", ".docx",
 def normalize(link):
     parsed = urlparse(link)
     path = parsed.path
+    path = unquote(parsed.path)               # %E9%AB%98... → 高...（日本語表記にそろえる）
     if path.endswith("/index.html"):          # /guide/index.html → /guide/
         path = path[:-len("/index.html")]
     if "." not in path.rsplit("/", 1)[-1] and not path.endswith("/"):
